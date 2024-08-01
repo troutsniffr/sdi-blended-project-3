@@ -16,9 +16,13 @@ async function createRoom({ name }) {
   return room
 }
 
-async function updateRoom(id, roomData) {
-  await db('rooms').where({ id }).update(roomData)
-  return getRoomById(id)
+async function updateRoom(id, { name }) {
+  const [room] = await db
+    .update({ name })
+    .into('rooms')
+    .where({ id })
+    .returning('*')
+  return room
 }
 
 async function deleteRoom(id) {

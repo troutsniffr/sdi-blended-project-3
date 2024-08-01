@@ -3,8 +3,7 @@ const {
   getAllRooms,
   getRoomById,
   createRoom,
-  editRoom,
-  minorEditedRoom,
+  updateRoom,
   deleteRoom,
 } = require('../services/rooms')
 
@@ -35,10 +34,15 @@ router.post('/', async (req, res) => {
   return res.status(200).json({ room })
 })
 
-router.patch('/id', async (req, res) => {
+router.patch('/:id', async (req, res) => {
   const { id } = req.params
-  const minorEditRoom = await minorEditedRoom(req.body)
-  return res.status(200).json(minorEditRoom)
+  const room = await updateRoom(id, req.body)
+
+  if (!room) {
+    return res.status(400).json({ message: 'Error updating room' })
+  }
+
+  return res.status(200).json({ room })
 })
 
 router.delete('/:id', async (req, res) => {
