@@ -35,13 +35,6 @@ router.post('/', async (req, res) => {
   return res.status(200).json({ room })
 })
 
-// router.put('/:id', async (req, res) => {
-//   const { id } = req.params
-
-//   const reviseRoom = await editRoom(id, req.body)
-//   return res.status(200).json(reviseRoom)
-// })
-
 router.patch('/id', async (req, res) => {
   const { id } = req.params
   const minorEditRoom = await minorEditedRoom(req.body)
