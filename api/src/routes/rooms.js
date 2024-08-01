@@ -47,8 +47,13 @@ router.patch('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   const { id } = req.params
-  await deleteRoom(id)
-  return res.status(200).json(deleteRoom)
+  const room = await deleteRoom(id)
+
+  if (!room.is_deleted) {
+    return res.status(400).json({ message: 'Error deleting room' })
+  }
+
+  return res.status(200).json({ message: 'Room deleted' })
 })
 
 module.exports = router

@@ -26,7 +26,11 @@ async function updateRoom(id, { name }) {
 }
 
 async function deleteRoom(id) {
-  return await db('rooms').where({ id }).update({ is_deleted: true })
+  const [room] = await db('rooms')
+    .where({ id })
+    .update({ is_deleted: true })
+    .returning('*')
+  return room
 }
 
 module.exports = {
