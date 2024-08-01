@@ -1,11 +1,42 @@
 const express = require('express');
-const { listAllOrganizations } = require('../services/directory');
+const { listAlldirectory, getdirectorybyid, addToDirectory, editDirectory, deldirectory, minorEditdirectory } = require('../services/directory');
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const orgs = await listAllOrganizations(options);
-  return res.status(200).json(orgs)
+  const dir = await listAlldirectory(options);
+  return res.status(200).json(dir)
 })
+
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+  const dir = await getdirectorybyid(id);
+  return res.status(200).json(dir)
+})
+
+router.post('/:id', async (req, res) => {
+  const newPerson = await addToDirectory(req.body)
+
+  return res.status(200).json(newPerson)
+})
+
+router.put('/:id', async (req, res) =>{
+  const editPerson = await editDirectory(req.body)
+  
+  return res.status(200).json(editPerson)
+})
+
+router.delete('/:id', async (req, res) => {
+  const delPerson = await deldirectory(req.body)
+
+  return res.status(200).json(delPerson)
+})
+
+router.patch('/:id', async (req, res) => {
+  const minorEdit = await minorEditdirectory(req.body)
+
+  return res.status(200).json(minorEdit)
+})
+
 
 module.exports = router

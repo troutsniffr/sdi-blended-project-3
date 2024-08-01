@@ -1,11 +1,44 @@
 const express = require('express');
-const { listAllOrganizations } = require('../services/rooms');
+const { getAllRooms, getRoomById, createRoom, editRoom, minorEditedRoom, deleteRoom } = require('../services/rooms');
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const orgs = await listAllOrganizations(options);
-  return res.status(200).json(orgs)
+  const orgs = await getAllRooms();
+  return res.status(200).json(rooms)
 })
 
-module.exports = router
+router.get('/id', async(req, res) => {
+  const { id } = req.params;
+  const room = await getRoomById(id);
+  if (room) {
+    return res.status(200).json(room);
+  }
+})
+
+router.post('/', async (req, res) => {
+  const newRoom = await createRoom(req.body);
+  return res.status(200).json(newRoom);
+})
+
+router.put('/id', async (req, res) => {
+  const { id } = req.params;
+  const reviseRoom = await editRoom(req.body);
+  return res.status(200).json(reviseRoom);
+})
+
+
+router.patch('/id', async (req, res) => {
+  const { id } = req.params;
+  const minorEditRoom = await minorEditedRoom(req.body);
+  return res.status(200).json(minorEditRoom)
+})
+
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+  await deleteRoom(id);
+  return res.status(200).json(deleteRoom);
+})
+
+
+module.exports = router;

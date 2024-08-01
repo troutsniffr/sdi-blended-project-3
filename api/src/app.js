@@ -5,6 +5,7 @@ var logger = require('morgan')
 
 var indexRouter = require('./routes/index')
 const orgsRouter = require('./routes/organizations')
+const buildsRouter = require('./routes/launch_builds')
 
 var app = express()
 
@@ -15,6 +16,7 @@ app.use(cookieParser())
 
 app.use('/', indexRouter)
 app.use('/api/v1/orgs', orgsRouter)
+app.use('/api/v1/builds', buildsRouter)
 
 // catch 404 and forward to error handler
 app.use(function (_req, _res, next) {
