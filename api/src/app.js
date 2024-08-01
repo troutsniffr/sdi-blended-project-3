@@ -6,6 +6,7 @@ var logger = require('morgan')
 var indexRouter = require('./routes/index')
 const orgsRouter = require('./routes/organizations')
 const buildsRouter = require('./routes/launch_builds')
+const roomsRouter = require('./routes/rooms')
 
 var app = express()
 
@@ -17,6 +18,7 @@ app.use(cookieParser())
 app.use('/', indexRouter)
 app.use('/api/v1/orgs', orgsRouter)
 app.use('/api/v1/builds', buildsRouter)
+app.use('/api/v1/rooms', roomsRouter)
 
 // catch 404 and forward to error handler
 app.use(function (_req, _res, next) {
@@ -31,7 +33,6 @@ app.use(function (err, req, res, _next) {
 
   // render the error page
   res.status(err.status || 500).send(err.message)
-  
 })
 
 module.exports = app

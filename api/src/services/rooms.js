@@ -1,31 +1,42 @@
-const db = require('../db');
+const db = require('../db')
 
 async function getAllRooms() {
-  return await db.select('*').from('rooms').where('is_deleted', false);
+  return await db('rooms as r').select('r.*').where({ is_deleted: false })
 }
 
-async function getRoomsById(id){
-  return await db('rooms')
-    .select('*')
-    .where({id, is_deleted: false}).first();
-  } 
-  
-async function createRoom(roomData) {
-    const[id] = await db('rooms').insert(roomData).returning('id');
-    return getRoomById;
+async function getRoomById(id) {
+  return await db('rooms as r')
+    .select('r.*')
+    .where({ id, is_deleted: false })
+    .first()
 }
 
-async function updateRoom (id, roomData) {
-  await db('rooms').where({ id }).update(roomData);
-  return getRoomById(id);
+async function createRoom({ name }) {
+  const [room] = await db.insert({ name }).into('rooms').returning('*')
+  return room
+}
+
+async function updateRoom(id, { name }) {
+  const [room] = await db
+    .update({ name })
+    .into('rooms')
+    .where({ id })
+    .returning('*')
+  return room
 }
 
 async function deleteRoom(id) {
-  return await db('rooms').where({id}).update({is_deleted:true});
+  const [room] = await db('rooms')
+    .where({ id })
+    .update({ is_deleted: true })
+    .returning('*')
+  return room
 }
 
-
-
-
-
-  module.exports = { getAllRooms, getRoomById, createRoom, updateRoom, deleteRoom }
+module.exports = {
+  getAllRooms,
+  getRoomById,
+  createRoom,
+  updateRoom,
+  deleteRoom,
+}
