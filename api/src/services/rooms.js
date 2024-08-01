@@ -1,31 +1,31 @@
-const db = require('../db');
+const db = require('../db')
 
 async function getAllRooms() {
-  return await db.select('*').from('rooms').where('is_deleted', false);
+  return await db('rooms as r').select('*').where({ 'r.is_deleted': false })
 }
 
-async function getRoomsById(id){
-  return await db('rooms')
-    .select('*')
-    .where({id, is_deleted: false}).first();
-  } 
-  
+async function getRoomById(id) {
+  return await db('rooms').select('*').where({ id, is_deleted: false }).first()
+}
+
 async function createRoom(roomData) {
-    const[id] = await db('rooms').insert(roomData).returning('id');
-    return getRoomById;
+  const [id] = await db('rooms').insert(roomData).returning('id')
+  return getRoomById
 }
 
-async function updateRoom (id, roomData) {
-  await db('rooms').where({ id }).update(roomData);
-  return getRoomById(id);
+async function updateRoom(id, roomData) {
+  await db('rooms').where({ id }).update(roomData)
+  return getRoomById(id)
 }
 
 async function deleteRoom(id) {
-  return await db('rooms').where({id}).update({is_deleted:true});
+  return await db('rooms').where({ id }).update({ is_deleted: true })
 }
 
-
-
-
-
-  module.exports = { getAllRooms, getRoomById, createRoom, updateRoom, deleteRoom }
+module.exports = {
+  getAllRooms,
+  getRoomById,
+  createRoom,
+  updateRoom,
+  deleteRoom,
+}
