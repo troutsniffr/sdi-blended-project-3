@@ -6,6 +6,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Panel } from 'primereact/panel';
 import { PickList } from 'primereact/picklist';
+import { Link } from 'react-router-dom';
 
 export const OrgManager = () => {
   const [source, setSource] = useState([
@@ -35,6 +36,7 @@ export const OrgManager = () => {
   const itemTemplate = (item) => {
     return (
       <div className="flex flex-col p-2">
+
         <span className="font-bold mb-2">{item.name}</span>
         <span>{item.org} - {item.dutyTitle}</span>
       </div>
@@ -113,6 +115,7 @@ export const OrgManager = () => {
 
   return (
     <div>
+      <Link to='/'><Button>HOME</Button></Link>
       <Card title="Org manager page - user">
         <div className="grid">
           <div className="col-12 md:col-6">
