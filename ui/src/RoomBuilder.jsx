@@ -14,7 +14,7 @@ export const RoomBuilder = () => {
 
   useEffect(()=>{
     if (stations.length > 0 && typeof stations[0] === 'string' && stations[0].startsWith('Room Name:')) {
-      //push to DB
+      //push "stations" useState to DB
       console.log(stations)
     }
   }, [stations]);
