@@ -5,7 +5,10 @@ async function getAllRooms() {
 }
 
 async function getRoomById(id) {
-  return await db('rooms').select('*').where({ id, is_deleted: false }).first()
+  return await db('rooms as r')
+    .select('r.*')
+    .where({ id, is_deleted: false })
+    .first()
 }
 
 async function createRoom(roomData) {

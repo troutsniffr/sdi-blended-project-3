@@ -15,12 +15,15 @@ router.get('/', async (_req, res) => {
   return res.status(200).json({ rooms })
 })
 
-router.get('/id', async (req, res) => {
+router.get('/:id', async (req, res) => {
   const { id } = req.params
   const room = await getRoomById(id)
+
   if (room) {
     return res.status(200).json(room)
   }
+
+  return res.status(404).json({ message: 'Room not found' })
 })
 
 router.post('/', async (req, res) => {
