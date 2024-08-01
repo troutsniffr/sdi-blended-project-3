@@ -1,11 +1,24 @@
-// const express = require('express');
-// const { listAllOrganizations } = require('../services/launch_station');
+const express = require('express');
+const { getAllStations, getStationById } = require('../services/launch_station');
 
-// const router = express.Router();
+const router = express.Router();
 
-// router.get('/', async (req, res) => {
-//   const orgs = await listAllOrganizations(options);
-//   return res.status(200).json(orgs)
-// })
+router.get('/', async (req, res) => {
+  const { extended = false } = req.query;
+  const options = { extended };
 
-// module.exports = router 
+  const orgs = await getAllStations(options);
+  return res.status(200).json(orgs)
+})
+
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  const { extended = false } = req.query;
+  const options = { extended };
+
+  const station = await getStationById(id, options);
+  return res.status(200).json(station)
+})
+
+module.exports = router
