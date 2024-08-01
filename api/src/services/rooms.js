@@ -1,7 +1,7 @@
 const db = require('../db')
 
 async function getAllRooms() {
-  return await db('rooms as r').select('*').where({ 'r.is_deleted': false })
+  return await db('rooms as r').select('r.*').where({ is_deleted: false })
 }
 
 async function getRoomById(id) {
