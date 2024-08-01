@@ -4,7 +4,7 @@ const { getAllRooms, getRoomById, createRoom, editRoom, minorEditedRoom, deleteR
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const orgs = await getAllRooms();
+  const rooms = await getAllRooms();
   return res.status(200).json(rooms)
 })
 

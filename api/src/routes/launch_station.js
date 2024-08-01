@@ -1,11 +1,11 @@
-const express = require('express');
-const { listAllOrganizations } = require('../services/launch_station');
+// const express = require('express');
+// const { listAllOrganizations } = require('../services/launch_station');
 
-const router = express.Router();
+// const router = express.Router();
 
-router.get('/', async (req, res) => {
-  const orgs = await listAllOrganizations(options);
-  return res.status(200).json(orgs)
-})
+// router.get('/', async (req, res) => {
+//   const orgs = await listAllOrganizations(options);
+//   return res.status(200).json(orgs)
+// })
 
-module.exports = router
+// module.exports = router 
