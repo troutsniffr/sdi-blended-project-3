@@ -13,12 +13,7 @@ services:
     volumes:
       - ./data/db:/var/lib/postgresql/data
 
-  frontend:
-    build: ./ui
-    ports:
-      - '3000:3000'
-    depends_on:
-      - server
+
 
 volumes:
   db:
