@@ -22,43 +22,45 @@ export const LaunchBuilder = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
       <Card className="w-full max-w-6xl bg-gray-800 border border-gray-700">
         <h1 className="text-2xl font-bold mb-4">Launch builder page - Admin</h1>
-        
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <h2 className="text-xl mb-2">launch builder</h2>
             <Dropdown className="w-full mb-2" placeholder="select launch" />
-            
+
             <h3 className="text-lg mb-2">Rooms</h3>
+            {/* pull the rooms  */}
             {rooms.map((room, index) => (
               <Dropdown key={index} className="w-full mb-2" value={room} options={[room]} />
             ))}
             <Button label="Add/Create New Room +" onClick={addRoom} className="p-button-outlined w-full" />
-            
+
             <h3 className="text-lg mt-4 mb-2">Station</h3>
+            {/* map over stations we pull from room below */}
             {['Station 1', 'Station 2', 'Station 3'].map((station, index) => (
               <div key={index} className="flex gap-2 mb-2">
-                <Button label={station} className={index === 0 ? "p-button-warning" : "p-button-outlined"} />
+                <Button label={station} className={index === 0 ? "p-button-outlined" : "p-button-outlined"} />
                 {[1, 2, 3].map((_, i) => (
                   <InputText key={i} placeholder="Name/duty" className="flex-grow" />
                 ))}
               </div>
             ))}
-            
-            <Button label="Create launch seating plan" className="p-button-success mt-4" />
+
+            <Button label="Create launch seating plan" className="p-button-outlined" />
           </div>
-          
+
           <div>
             <h2 className="text-xl mb-2">Names</h2>
-            <Dropdown className="w-full mb-2" placeholder="ORG" />
-            <Dropdown className="w-full mb-2" placeholder="Duty Title" />
-            
+            <Dropdown filter className="w-full mb-2" placeholder="ORG" />
+            <Dropdown filter className="w-full mb-2" placeholder="Duty Title" />
+
             <DataTable value={names} className="mt-2">
               <Column field="name" header="Name" />
               <Column field="org" header="Org" />
               <Column field="dutyTitle" header="Duty Title" />
             </DataTable>
-            
-            <Button label="assign attendee" className="p-button-info mt-4" />
+
+            <Button label="assign attendee" className="p-button-outlined" />
           </div>
         </div>
       </Card>

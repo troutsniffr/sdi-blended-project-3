@@ -1,10 +1,10 @@
 import React from 'react';
-import Navbar from './Navbar'; // Create this component separately
+import { NavBar } from './NavBar';
 
 const Layout = ({ children }) => {
   return (
     <div>
-      <Navbar />
+      <NavBar />
       <main>{children}</main>
     </div>
   );
