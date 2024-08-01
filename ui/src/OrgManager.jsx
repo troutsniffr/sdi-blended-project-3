@@ -9,9 +9,9 @@ import { PickList } from 'primereact/picklist';
 
 export const OrgManager = () => {
   const [source, setSource] = useState([
-    { name: 'Mr. Somebody', org: 'Boeing', dutyTitle: 'SPO' },
-    { name: 'Mr. Somebodyelse', org: 'Boeing', dutyTitle: 'SPO' },
-    { name: 'Mr. anotherperson', org: 'Boeing', dutyTitle: 'SPO' },
+    { name: 'Mr. Somebody', org: '5 SLS', dutyTitle: 'FML' },
+    { name: 'Mr. Somebodyelse', org: 'SPO', dutyTitle: 'Prop' },
+    { name: 'Mr. anotherperson', org: 'SSC', dutyTitle: 'Eng' },
   ]);
 
   const [newAttendee, setNewAttendee] = useState({
