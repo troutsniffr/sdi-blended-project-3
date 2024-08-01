@@ -27,8 +27,12 @@ router.get('/:id', async (req, res) => {
 })
 
 router.post('/', async (req, res) => {
-  const newRoom = await createRoom(req.body)
-  return res.status(200).json(newRoom)
+  const room = await createRoom(req.body)
+  if (!room) {
+    return res.status(400).json({ message: 'Error creating room' })
+  }
+
+  return res.status(200).json({ room })
 })
 
 router.put('/id', async (req, res) => {

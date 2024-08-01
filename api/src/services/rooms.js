@@ -11,9 +11,9 @@ async function getRoomById(id) {
     .first()
 }
 
-async function createRoom(roomData) {
-  const [id] = await db('rooms').insert(roomData).returning('id')
-  return getRoomById
+async function createRoom({ name }) {
+  const [room] = await db.insert({ name }).into('rooms').returning('*')
+  return room
 }
 
 async function updateRoom(id, roomData) {
