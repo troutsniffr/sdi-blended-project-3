@@ -4,17 +4,22 @@ const { listAlldirectory, getdirectorybyid, addToDirectory, editDirectory, deldi
 const router = express.Router();
 
 router.get('/', async (req, res) => {
+  const { extended } = req.query
+  const options = { extended }
+
   const dir = await listAlldirectory(options);
   return res.status(200).json(dir)
 })
 
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
-  const dir = await getdirectorybyid(id);
+  const options = { extended: req.query }
+
+  const dir = await getdirectorybyid(id, options);
   return res.status(200).json(dir)
 })
 
-router.post('/:id', async (req, res) => {
+router.post('/', async (req, res) => {
   const newPerson = await addToDirectory(req.body)
 
   return res.status(200).json(newPerson)

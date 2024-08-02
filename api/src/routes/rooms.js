@@ -1,11 +1,5 @@
 const express = require('express')
-const {
-  getAllRooms,
-  getRoomById,
-  createRoom,
-  updateRoom,
-  deleteRoom,
-} = require('../services/rooms')
+const { getAllRooms, getRoomById, createRoom, updateRoom, deleteRoom} = require('../services/rooms')
 
 const router = express.Router()
 
@@ -57,3 +51,4 @@ router.delete('/:id', async (req, res) => {
 })
 
 module.exports = router
+    
