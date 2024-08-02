@@ -39,6 +39,10 @@ async function addLaunchRoom({ launch_id, room_id }) {
   return await db.insert({ launch_id, room_id }).into('launch_rooms').returning('*');
 }
 
+async function deleteLaunchRoom(id) {
+  return await db('launch_rooms').where({ id }).update({ is_deleted: true })
+}
+
 async function getLaunchStations(launch_id, room_id, { extended }) {
   let stations;
 
@@ -63,4 +67,22 @@ async function getLaunchStations(launch_id, room_id, { extended }) {
   return { stations }
 }
 
-module.exports = { getAllBuilds, getBuildById, deleteBuildById, getLaunchRooms, addLaunchRoom, getLaunchStations }
+async function createBuild({ name, description, date }) {
+
+  const [makeBuild] = await db('launch_builds')
+  .insert({ name, description, date })
+  .returning('*')
+  
+  return makeBuild;
+}
+
+async function allocateStationSlot({launch_id, room_id, station_id, person_id}) {
+  return await db.insert({ launch_id, room_id, station_id,person_id }).into('launch_rooms');
+}
+
+async function deallocateStationSlot(launch_id, room_id, station_id, person_id) {
+  return await db('launch_stations').where({ launch_id, room_id, station_id, person_id }).del();
+}
+
+
+module.exports = { getAllBuilds, getBuildById, createBuild, deleteBuildById, deleteLaunchRoom, getLaunchRooms, addLaunchRoom, getLaunchStations, allocateStationSlot, deallocateStationSlot }

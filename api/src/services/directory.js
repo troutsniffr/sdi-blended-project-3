@@ -3,18 +3,13 @@ const db = require('../db');
 async function listAlldirectory(options) {
    
     if (options.extended) {
-        return await db('directory as dir')
-            .select('dir.*', db.raw(`COALESCE(
-                json_agg(
-                    jsonb_build_object(
-                        'id', d.id,
-                        'full_name', d.fullname,
-                        'duty_title', d.duty_title,
-                        'phone_number', d.phone_number,
-                        'email', d.email
-                        )
-                    ) filter (WHERE d.id IS NOT NULL AND d.is_deleted = false, '[]') as "directory"`))
-            .groupby('dir.id')
+        
+        return await db('directory as d')
+            .select('d.id', 'd.full_name', 'd.duty_title', 'd.phone_number', 'd.email', db.raw(`jsonb_build_object(
+                        'id', o.id,
+                        'name', o.name
+                        ) as "org"`))
+            .leftJoin('organizations as o', 'o.id', 'd.org_id')
     }
 
     return await db.select('*').from('directory').orderBy('id')
@@ -22,22 +17,13 @@ async function listAlldirectory(options) {
 
 async function getdirectorybyid(id, options) {
     if (options.extended) {
-        return await db('directory as dir')
-        .select('dir.*', db.raw(`COALESCE(
-            json_agg(
-                jsonb_build_object(
-                'id', dir.id, 
-                'full_name', 
-                dir.full_name, 
-                'duty_title', dir.duty_title, 
-                'phone_number', dir.phone_number, 
-                'email', d.email
-                )
-            ) FILTER (WHERE d.id IS NOT NULL AND d.is_deleted = false), '[]') as "directory"`))
-        .leftJoin('dir', 'dir.id')
-        .where('dir.id', id)
-        .groupBy('dir.id')
-        
+        return await db('directory as d')
+            .select('d.id', 'd.full_name', 'd.duty_title', 'd.phone_number', 'd.email', db.raw(`jsonb_build_object(
+                        'id', o.id,
+                        'name', o.name
+                        ) as "org"`))
+            .leftJoin('organizations as o', 'o.id', 'd.org_id')
+            .where('d.id', id)
     }
 
     return await db.select('*').from('directory').where({ id }).first();
@@ -49,7 +35,7 @@ async function addToDirectory(newPersondata) {
         .insert(newPersondata)
         .returning('*')
 
-        return newPerson;   
+        return newPerson;
 }
 async function editDirectory(id, editPerson) {
         
@@ -65,7 +51,8 @@ async function deldirectory(id) {
 
         const [deletedPerson] = await db('directory')
             .where({id})
-            .del();
+            .del()
+            .returning('*')
     
         return deletedPerson;
 }

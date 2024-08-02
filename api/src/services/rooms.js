@@ -1,7 +1,7 @@
 const db = require('../db')
 
 async function getAllRooms() {
-  return await db('rooms as r').select('r.*').where({ is_deleted: false })
+  return await db('rooms as r').select('r.*').where({ is_deleted: false || null })
 }
 
 async function getRoomById(id) {
@@ -33,10 +33,4 @@ async function deleteRoom(id) {
   return room
 }
 
-module.exports = {
-  getAllRooms,
-  getRoomById,
-  createRoom,
-  updateRoom,
-  deleteRoom,
-}
+module.exports = { getAllRooms, getRoomById, createRoom, updateRoom, deleteRoom }
