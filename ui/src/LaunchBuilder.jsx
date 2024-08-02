@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from 'primereact/card';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
@@ -7,16 +7,74 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 
 export const LaunchBuilder = () => {
-  const [rooms, setRooms] = useState(['room 1', 'room 2']);
+  const [launches, setLaunches] = useState([]);
+  const [selectedLaunch, setSelectedLaunch] = useState(null);
+  const [rooms, setRooms] = useState([]);
   const [names, setNames] = useState([
-    { name: 'Mr. Somebody', org: 'Boeing', dutyTitle: 'SPO' },
-    { name: 'Mr. Somebodyelse', org: 'Boeing', dutyTitle: 'SPO' },
-    { name: 'Mr. anotherperson', org: 'Boeing', dutyTitle: 'SPO' },
+    { id: 1, name: 'Mr. Somebody', org: 'Boeing', dutyTitle: 'SPO' },
+    { id: 2, name: 'Mr. Somebodyelse', org: 'Boeing', dutyTitle: 'SPO' },
+    { id: 3, name: 'Mr. anotherperson', org: 'Boeing', dutyTitle: 'SPO' },
   ]);
 
-  const addRoom = () => {
-    setRooms([...rooms, `room ${rooms.length + 1}`]);
+  useEffect(() => {
+    const fetchLaunches = async () => {
+      try {
+        const response = await fetch('http://localhost:3002/api/v1/builds/');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setLaunches(data.map(launch => ({ label: launch.name, value: launch.id })));
+      } catch (error) {
+        console.error('Error fetching launches:', error);
+      }
+    };
+
+    fetchLaunches();
+  }, []);
+
+
+
+  const addRoom = async () => {
+    if (selectedLaunch) {
+      try {
+        const response = await fetch(`http://localhost:3002/api/v1/builds/${selectedLaunch}/rooms`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name: `Room ${rooms.length + 1}` }),
+        });
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const newRoom = await response.json();
+        setRooms([...rooms, { id: newRoom.id, launch_id: selectedLaunch, room_id: newRoom.room_id }]);
+      } catch (error) {
+        console.error('Error adding room:', error);
+      }
+    }
   };
+  useEffect(() => {
+    const fetchRooms = async () => {
+      if (selectedLaunch) {
+        try {
+          const response = await fetch(`http://localhost:3002/api/v1/builds/${selectedLaunch}/rooms`);
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          const data = await response.json();
+          setRooms(data.map(room => ({ id: room.id, room_id: room.room_id })));
+
+        } catch (error) {
+          console.error('Error fetching rooms:', error);
+        }
+      }
+    };
+
+    fetchRooms();
+  }, [selectedLaunch]);
+  console.log(rooms)
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
@@ -26,27 +84,34 @@ export const LaunchBuilder = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <h2 className="text-xl mb-2">launch builder</h2>
-            <Dropdown className="w-full mb-2" placeholder="select launch" />
+            <Dropdown
+              className="w-full mb-2"
+              placeholder="select launch"
+              options={launches}
+              value={selectedLaunch}
+              onChange={(e) => setSelectedLaunch(e.value)}
+              optionLabel="label"
+              optionValue="value"
+            />
 
             <h3 className="text-lg mb-2">Rooms</h3>
-            {/* pull the rooms  */}
-            {rooms.map((room, index) => (
-              <Dropdown key={index} className="w-full mb-2" value={room} options={[room]} />
+            {rooms.map((room) => (
+              <Button key={room.id} label={`Room ${room.room_id}`}className="p-button-outlined w-full" value={rooms} onClick=''/>/*filter stations to selected room onClick*/
             ))}
             <Button label="Add/Create New Room +" onClick={addRoom} className="p-button-outlined w-full" />
 
             <h3 className="text-lg mt-4 mb-2">Station</h3>
-            {/* map over stations we pull from room below */}
-            {['Station 1', 'Station 2', 'Station 3'].map((station, index) => (
-              <div key={index} className="flex gap-2 mb-2">
-                <Button label={station} className={index === 0 ? "p-button-outlined" : "p-button-outlined"} />
-                {[1, 2, 3].map((_, i) => (
-                  <InputText key={i} placeholder="Name/duty" className="flex-grow" />
-                ))}
-              </div>
-            ))}
+            {rooms.map((room) => (
+                <Dropdown
+                  key={room.id}
+                  className="w-full mb-2"
+                  value={room.room_id}
+                  options={[{ label: `Room ${room.room_id}`, value: room.room_id }]}
+                  optionLabel="label"
+                />
+              ))}
 
-            <Button label="Create launch seating plan" className="p-button-outlined" />
+            <Button label="Create launch seating plan" className="p-button-outlined mt-4" />
           </div>
 
           <div>
@@ -54,13 +119,13 @@ export const LaunchBuilder = () => {
             <Dropdown filter className="w-full mb-2" placeholder="ORG" />
             <Dropdown filter className="w-full mb-2" placeholder="Duty Title" />
 
-            <DataTable value={names} className="mt-2">
+            <DataTable value={names} className="mt-2" datakey='id'>
               <Column field="name" header="Name" />
               <Column field="org" header="Org" />
               <Column field="dutyTitle" header="Duty Title" />
             </DataTable>
 
-            <Button label="assign attendee" className="p-button-outlined" />
+            <Button label="assign attendee" className="p-button-outlined mt-4" />
           </div>
         </div>
       </Card>

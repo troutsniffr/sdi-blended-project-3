@@ -2,6 +2,7 @@ var createError = require('http-errors')
 var express = require('express')
 var cookieParser = require('cookie-parser')
 var logger = require('morgan')
+const cors = require('cors');
 
 var indexRouter = require('./routes/index')
 const orgsRouter = require('./routes/organizations')
@@ -9,7 +10,7 @@ const buildsRouter = require('./routes/launch_builds')
 const roomsRouter = require('./routes/rooms')
 
 var app = express()
-
+app.use(cors());
 app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -33,6 +34,8 @@ app.use(function (err, req, res, _next) {
 
   // render the error page
   res.status(err.status || 500).send(err.message)
+
 })
+
 
 module.exports = app
