@@ -9,7 +9,16 @@ import { Column } from 'primereact/column';
 export const LaunchBuilder = () => {
   const [launches, setLaunches] = useState([]);
   const [selectedLaunch, setSelectedLaunch] = useState(null);
+
   const [rooms, setRooms] = useState([]);
+  const [selectedRoom, setSelectedRoom] = useState(null)
+
+  const [stations, setStations] = useState([]);
+  const [selectedStation, setSelectedStation] = useState(null);
+
+  const [orgs, setOrgs] = useState([])
+  const [selectedOrg, setSelectedOrg] = useState(null)
+  
   const [names, setNames] = useState([
     { id: 1, name: 'Mr. Somebody', org: 'Boeing', dutyTitle: 'SPO' },
     { id: 2, name: 'Mr. Somebodyelse', org: 'Boeing', dutyTitle: 'SPO' },
@@ -23,8 +32,8 @@ export const LaunchBuilder = () => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
-        const data = await response.json();
-        setLaunches(data.map(launch => ({ label: launch.name, value: launch.id })));
+        const launches = await response.json();
+        setLaunches(launches)
       } catch (error) {
         console.error('Error fetching launches:', error);
       }
@@ -55,6 +64,7 @@ export const LaunchBuilder = () => {
       }
     }
   };
+
   useEffect(() => {
     const fetchRooms = async () => {
       if (selectedLaunch) {
@@ -63,9 +73,8 @@ export const LaunchBuilder = () => {
           if (!response.ok) {
             throw new Error('Network response was not ok');
           }
-          const data = await response.json();
-          console.log(data)
-          setRooms(data.map(room => ({ id: room.id, name: room.name })));
+          const rooms = await response.json();
+          setRooms(rooms)
 
         } catch (error) {
           console.error('Error fetching rooms:', error);
@@ -76,10 +85,50 @@ export const LaunchBuilder = () => {
     fetchRooms();
   }, [selectedLaunch]);
 
+  useEffect(() => {
+    const fetchRoomSeats = async () => {
+      if (selectedRoom) {
+        try {
+          const response = await fetch(`http://localhost:3002/api/v1/rooms/${selectedRoom}/stations`);
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          const {stations} = await response.json();
+          setStations(stations);
+        } catch (error) {
+          console.error('Error fetching seats:', error
+          );
+      }
+    }
+  };
+  
+  fetchRoomSeats();
+  
+  }, [selectedRoom])
+
+useEffect(() => {
+  const fetchOrgs = async () => {
+    if (selectedOrg) {
+      try{
+        const response = await fetch('http://localhost:3002/api/v1/orgs/');
+        if (!response.ok) {
+          throw new Error ('Network reponse was not ok');
+        }
+        const {orgs} = await response.json();
+        setOrgs(orgs)
+      } catch (error) {
+        console.error('Error fetching launches:', error);
+      }
+    }
+  }
+    
+    fetchOrgs();
+  }, [selectedOrg]);
+
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-      <Card className="w-full max-w-6xl bg-gray-800 border border-gray-700">
+    <div>
+      <Card>
         <h1 className="text-2xl font-bold mb-4">Launch builder page - Admin</h1>
 
         <div className="grid grid-cols-2 gap-4">
@@ -89,35 +138,56 @@ export const LaunchBuilder = () => {
               className="w-full mb-2"
               placeholder="select launch"
               options={launches}
+              optionLabel="name"
+              optionValue="id"
               value={selectedLaunch}
               onChange={(e) => setSelectedLaunch(e.value)}
-              optionLabel="label"
-              optionValue="value"
             />
 
-            <h3 className="text-lg mb-2">Rooms</h3>
-            {rooms.map((room) => (
-              <Button key={room.id} label={`Room ${room.name}`}className="p-button-outlined w-full" value={rooms} onClick=''/>/*filter stations to selected room onClick*/
-            ))}
-            <Button label="Add/Create New Room +" onClick={addRoom} className="p-button-outlined w-full" />
+            {selectedLaunch && (
+              <>
+              <h3>Rooms</h3>
+              <Dropdown
+                placeholder="select room"
+                options={rooms}
+                optionLabel="name"
+                optionValue="id"
+                value={selectedRoom}
+                onChange={(e) => setSelectedRoom(e.value)}
+              />
 
-            <h3 className="text-lg mt-4 mb-2">Station</h3>
-            {rooms.map((room) => (
-                <Dropdown
-                  key={room.id}
-                  className="w-full mb-2"
-                  value={room.name}
-                  options={[{ label: `Room ${room.name}`, value: room.id }]}
-                  optionLabel="label"
-                />
-              ))}
+              <Button label="Add Room" onClick={addRoom} className="p-button-outlined w-full" />
+              </>
+            )}
 
-            <Button label="Create launch seating plan" className="p-button-outlined mt-4" />
+            {selectedRoom && (
+              <>
+                <h3>Stations</h3>
+              <Dropdown
+                placeholder="select station"
+                options={stations}
+                optionLabel="name"
+                optionValue="id"
+                value={selectedStation}
+                onChange={(e) => setSelectedStation(e.value)}
+              />
+              </>
+            )}
+
+            {/* <Button label="Create launch seating plan" className="p-button-outlined mt-4" /> */}
           </div>
 
           <div>
             <h2 className="text-xl mb-2">Names</h2>
-            <Dropdown filter className="w-full mb-2" placeholder="ORG" />
+            <Dropdown
+              placeholder="ORG" 
+              optons={orgs}
+              optionLabel="name"
+              optionvalue="id"
+              value={selectedOrg}
+              onChange={(e) => setSelectedOrg(e.value)}
+            />
+            
             <Dropdown filter className="w-full mb-2" placeholder="Duty Title" />
 
             <DataTable value={names} className="mt-2" datakey='id'>

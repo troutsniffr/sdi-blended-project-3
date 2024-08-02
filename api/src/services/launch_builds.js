@@ -20,7 +20,7 @@ async function getLaunchRooms(id, { extended }) {
   if (extended) {
     return await db('launch_rooms as lr')
       .select(
-        'lr.id', 'r.name',
+        'lr.room_id as id', 'lr.room_id', 'r.name',
         db.raw(`jsonb_build_object('id', lb.id, 'name', lb.name, 'description', lb.description, 'date', lb.date) as "build"`)
       )
       .innerJoin('launch_builds as lb', 'lr.launch_id', 'lb.id')

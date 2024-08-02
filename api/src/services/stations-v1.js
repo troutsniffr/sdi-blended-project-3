@@ -1,7 +1,7 @@
 const db = require('../db');
 
-async function getAllStations() {
-  return await db.select('*').from('stations').where({ is_deleted: false });
+async function getAllStations(roomId) {
+  return await db.select('*').from('stations').where({ is_deleted: false, room_id: roomId });
 }
 
 async function getStationById(id) {
