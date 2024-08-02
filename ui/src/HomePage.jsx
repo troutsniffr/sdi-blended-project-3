@@ -225,12 +225,12 @@ export const HomePage = () => {
             <label htmlFor="maxAttendees">Max Attendees</label>
           </FloatLabel>
 
-            <Link
-              to={`/OrgManager/${selectedOrg}/${maxAttendees}`}
-              className={`p-button p-button-info ${(!selectedOrg || maxAttendees <= 0) ? 'p-disabled' : ''}`}
-            >
-              Create Org Manager Invite Link
-            </Link>
+          <Link
+            to={`/OrgManager/${selectedOrg}/${maxAttendees}`}
+            className={`p-button p-button-info ${(!selectedOrg || maxAttendees <= 0) ? 'p-disabled' : ''}`}
+          >
+            Create Org Manager Invite Link
+          </Link>
         </div>
       </Card>
     </div>

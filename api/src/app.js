@@ -20,8 +20,6 @@ app.use('/api/v1/orgs', orgsRouter)
 app.use('/api/v1/builds', buildsRouter)
 
 
-// Your other middleware and route handlers
-
 // catch 404 and forward to error handler
 app.use(function (_req, _res, next) {
   next(createError(404))
