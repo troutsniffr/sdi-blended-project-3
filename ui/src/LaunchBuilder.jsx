@@ -59,12 +59,13 @@ export const LaunchBuilder = () => {
     const fetchRooms = async () => {
       if (selectedLaunch) {
         try {
-          const response = await fetch(`http://localhost:3002/api/v1/builds/${selectedLaunch}/rooms`);
+          const response = await fetch(`http://localhost:3002/api/v1/builds/${selectedLaunch}/rooms?extended=true`);
           if (!response.ok) {
             throw new Error('Network response was not ok');
           }
           const data = await response.json();
-          setRooms(data.map(room => ({ id: room.id, room_id: room.room_id })));
+          console.log(data)
+          setRooms(data.map(room => ({ id: room.id, name: room.name })));
 
         } catch (error) {
           console.error('Error fetching rooms:', error);
@@ -74,7 +75,7 @@ export const LaunchBuilder = () => {
 
     fetchRooms();
   }, [selectedLaunch]);
-  console.log(rooms)
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
@@ -96,7 +97,7 @@ export const LaunchBuilder = () => {
 
             <h3 className="text-lg mb-2">Rooms</h3>
             {rooms.map((room) => (
-              <Button key={room.id} label={`Room ${room.room_id}`}className="p-button-outlined w-full" value={rooms} onClick=''/>/*filter stations to selected room onClick*/
+              <Button key={room.id} label={`Room ${room.name}`}className="p-button-outlined w-full" value={rooms} onClick=''/>/*filter stations to selected room onClick*/
             ))}
             <Button label="Add/Create New Room +" onClick={addRoom} className="p-button-outlined w-full" />
 
@@ -105,8 +106,8 @@ export const LaunchBuilder = () => {
                 <Dropdown
                   key={room.id}
                   className="w-full mb-2"
-                  value={room.room_id}
-                  options={[{ label: `Room ${room.room_id}`, value: room.room_id }]}
+                  value={room.name}
+                  options={[{ label: `Room ${room.name}`, value: room.id }]}
                   optionLabel="label"
                 />
               ))}
