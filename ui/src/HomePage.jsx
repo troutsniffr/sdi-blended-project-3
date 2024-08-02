@@ -3,12 +3,15 @@ import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FloatLabel } from 'primereact/floatlabel';
+import { ListBox } from 'primereact/listbox';
 
 const API_BASE_URL = 'http://localhost:3002/api/v1';
 
 export const HomePage = () => {
+  const [slotDetails, setSlotDetails] = useState({});
+  const [selectedRoom, setSelectedRoom] = useState(null);
   const [stations, setStations] = useState([]);
   const [organizations, setOrganizations] = useState([]);
   const [selectedOrg, setSelectedOrg] = useState(null);
@@ -18,6 +21,42 @@ export const HomePage = () => {
   const [launches, setLaunches] = useState([]);
   const [selectedLaunch, setSelectedLaunch] = useState(null);
   const [rooms, setRooms] = useState([]);
+  const navigate = useNavigate();
+
+
+  const handleRoomSelection = (room) => {
+    setSelectedRoom(room);
+    setStations([]);
+    setSlotDetails({});
+  };
+
+  const handleLaunchSelection = (selectedLaunch) => {
+    setSelectedLaunch(selectedLaunch);
+    setSelectedRoom(null);
+    setStations([]);
+    setSlotDetails({});
+  };
+
+  useEffect(() => {
+    const fetchOrganizations = async () => {
+      try {
+        const response = await fetch('/api/v1/orgs');
+        const data = await response.json();
+        setOrganizations(data.map(org => ({ label: org.name, value: org.id })));
+      } catch (error) {
+        console.error('Error fetching organizations:', error);
+      }
+    };
+
+    fetchOrganizations();
+  }, []);
+
+  const handleCreateInvite = () => {
+    console.log(selectedOrg)
+    if (selectedOrg && maxAttendees > 0) {
+      navigate(`/OrgManager/${selectedOrg}/${maxAttendees}`);
+    }
+  };
 
   useEffect(() => {
     fetchLaunches();
@@ -29,16 +68,13 @@ export const HomePage = () => {
       const response = await fetch(`${API_BASE_URL}/builds/`);
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
-      console.log(data)
       setLaunches(data.map(launch => ({
         label: launch.name,
         value: { date: launch.date, id: launch.id, label: launch.name }
-
       })));
     } catch (error) {
       console.error('Error fetching launches:', error);
     }
-
   };
 
   const loadOrganizations = async () => {
@@ -128,14 +164,17 @@ export const HomePage = () => {
     const fetchRooms = async () => {
       if (selectedLaunch) {
         try {
-          console.log(selectedLaunch.label)
-          const response = await fetch(`http://localhost:3002/api/v1/builds/${selectedLaunch.id}/rooms?extended=true`);
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
+          console.log('Fetching rooms for launch:', selectedLaunch.label);
+          const response = await fetch(`${API_BASE_URL}/builds/${selectedLaunch.id}/rooms?extended=true`);
+          if (!response.ok) throw new Error('Network response was not ok');
           const data = await response.json();
-          setRooms(data.map(room => ({ id: room.id, name: room.name })));
-
+          console.log('Rooms for each launch:', data);
+          setRooms(data.map(room => ({
+            otherId: room.room_id,
+            id: room.id,
+            name: room.name,
+            buildId: room.build.id
+          })));
         } catch (error) {
           console.error('Error fetching rooms:', error);
         }
@@ -144,95 +183,77 @@ export const HomePage = () => {
 
     fetchRooms();
   }, [selectedLaunch]);
-
+  useEffect(() => {
+    console.log(rooms)
+  }, [rooms]);
   useEffect(() => {
     const fetchStations = async () => {
-      if (rooms.id) {
+      if (selectedLaunch && selectedRoom) {
         try {
-          console.log(rooms)
-          console.log(rooms.id)
-          const response = await fetch(`http://localhost:3002/api/v1/builds/${selectedLaunch.id}/rooms/${rooms.id}/stations`);
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
+          console.log('Fetching stations for room:', selectedRoom.id);
+          if(selectedRoom.id == 1 && selectedLaunch.id == 1){setSelectedRoom({id:4})}
+          const response = await fetch(`${API_BASE_URL}/builds/${selectedLaunch.id}/rooms/${selectedRoom.id}/stations?extended=true`);
+          if (!response.ok) throw new Error('Network response was not ok');
           const data = await response.json();
-          setStations(data.map(station => ({ id: station.id, name: station.name })));
-
+          console.log('Fetched station data:', data);
+          setStations(data.stations.map(station => ({
+            id: station.id,
+            name: station.name,
+            capacity: station.capacity,
+            slots: station.slots
+          })));
         } catch (error) {
-          console.error('Error fetching rooms:', error);
+          console.error('Error fetching stations:', error);
         }
       }
     };
 
     fetchStations();
-  }, [rooms.id]);
+  }, [selectedLaunch, selectedRoom]);
+
+  const renderDetails = () => {
+    if (Object.keys(slotDetails).length === 0) return null;
+
+    const details = [
+      { label: 'Full Name:', value: slotDetails.full_name },
+      { label: 'Duty Title:', value: slotDetails.duty_title },
+      { label: 'Organization:', value: slotDetails.organization.name },
+      { label: 'Email:', value: slotDetails.email },
+      { label: 'Phone Number:', value: slotDetails.phone_number },
+    ];
+
+    return (
+      <Card className="bg-gray-700 border-gray-600">
+        <h2 className="font-bold mb-2">Slot Details</h2>
+        <ListBox value={details} options={details} itemTemplate={(item) => (
+          <div className="flex flex-column">
+            <div className="font-bold">{item.label}</div>
+            <div>{item.value}</div>
+          </div>
+        )} />
+      </Card>
+    );
+  };
 
   const renderStations = () => (
     stations.map((station) => (
-      <Card key={station} className="bg-gray-700 border-gray-600">
-        <h2 className="font-bold mb-2">Station {station}</h2>
+      <Card key={station.id} className="bg-gray-700 border-gray-600">
+        <h2 className="font-bold mb-2">Station {station.name}</h2>
         <div className="flex flex-col gap-2">
-          {[1, 2, 3].map((duty) => (
-            <InputText key={duty} placeholder="Name/duty" className="bg-gray-600 border-gray-500" />
+          {station.slots.map((slot) => (
+            <Button
+              key={slot.id}
+              label={`${slot.full_name} - ${slot.duty_title}`}
+              className="bg-gray-600 border-gray-500"
+              onClick={() => setSlotDetails(slot)}
+            />
           ))}
         </div>
       </Card>
     ))
   );
 
-  const renderOrganizationManager = () => (
-    <div className="flex flex-col space-y-4">
-      <div className="flex items-center space-x-2">
-        <Dropdown
-          value={selectedOrg}
-          options={organizations}
-          onChange={(e) => setSelectedOrg(e.value)}
-          placeholder="Select Organization"
-          className="bg-gray-700 border-gray-600 flex-grow"
-        />
-        <Button icon="pi pi-pencil" onClick={() => startEditOrg(selectedOrg)} disabled={!selectedOrg} />
-      </div>
 
-      <div className="flex items-center space-x-2">
-        <InputText
-          value={newOrgName}
-          onChange={(e) => setNewOrgName(e.target.value)}
-          placeholder={editingOrg ? "Edit organization name" : "New organization name"}
-          className="flex-grow"
-        />
-        {editingOrg ? (
-          <>
-            <Button label="Save" icon="pi pi-check" onClick={saveEditOrg} />
-            <Button label="Cancel" icon="pi pi-times" onClick={cancelEdit} className="p-button-secondary" />
-          </>
-        ) : (
-          <Button label="Add" icon="pi pi-plus" onClick={addNewOrg} />
-        )}
-      </div>
-      <FloatLabel>
-        <InputText
-          id="maxAttendees"
-          value={maxAttendees}
-          onChange={(e) => {
-            const value = parseInt(e.target.value, 10);
-            if (!isNaN(value) && value >= 0) {
-              setMaxAttendees(value);
-            }
-          }}
-          type="number"
-          min="1"
-        />
-        <label htmlFor="maxAttendees">Max Attendees</label>
-      </FloatLabel>
-
-      <Link
-        to={`/OrgManager/${selectedOrg}/${maxAttendees}`}
-        className={`p-button p-button-info ${(!selectedOrg || maxAttendees <= 0) ? 'p-disabled' : ''}`}
-      >
-        Create Org Manager Invite Link
-      </Link>
-    </div>
-  );
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
@@ -242,10 +263,10 @@ export const HomePage = () => {
           <div className="flex gap-2">
             <Dropdown
               className="w-full mb-2"
-              placeholder="select launch"
+              placeholder="Select Launch"
               options={launches}
               value={selectedLaunch}
-              onChange={(e) => setSelectedLaunch(e.value)}
+              onChange={(e) => handleLaunchSelection(e.value)}
               optionLabel="label"
             />
             <Button label="Edit" className="p-button-outlined" />
@@ -255,18 +276,46 @@ export const HomePage = () => {
 
         <div className="grid grid-cols-3 gap-4 mb-4">
           {renderLaunchInfo()}
-          <h1>Rooms</h1>
+          <h1>Launch Invite</h1>
           {rooms.map((room) => (
-              <Button key={room.id} label={`Room ${room.name}`}className="p-button-outlined w-full" value={rooms} onClick={renderStations}/>/*filter stations to selected room onClick*/
-            ))}
-
+            <Button
+              key={room.id}
+              label={`Room ${room.name}`}
+              onClick={() => handleRoomSelection(room)}
+              className={`p-button-outlined w-full ${selectedRoom && selectedRoom.id === room.id ? 'p-button-primary' : ''}`}
+            />
+          ))}
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-4">
           {renderStations()}
+          {renderDetails()}
         </div>
 
-        {renderOrganizationManager()}
+
+
+    <div className="flex flex-col space-y-4">
+      <Dropdown
+        value={selectedOrg}
+        options={organizations}
+        onChange={(e) => setSelectedOrg(e.value)}
+        placeholder="Select Organization"
+        className="w-full"
+      />
+      <InputText
+        type="number"
+        value={maxAttendees}
+        onChange={(e) => setMaxAttendees(e.target.value)}
+        placeholder="Max Attendees"
+        className="w-full"
+      />
+      <Button
+        label="Create Org Manager Invite Link"
+        onClick={handleCreateInvite}
+        disabled={!selectedOrg || maxAttendees <= 0}
+        className="w-full"
+      />
+    </div>
       </Card>
     </div>
   );

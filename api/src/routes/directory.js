@@ -27,7 +27,7 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) =>{
   const editPerson = await editDirectory(req.body)
-  
+
   return res.status(200).json(editPerson)
 })
 

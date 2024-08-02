@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
@@ -9,11 +10,14 @@ import { PickList } from 'primereact/picklist';
 import { Link } from 'react-router-dom';
 
 export const OrgManager = () => {
+  const [organization, setOrganization] = useState(null);
+  const { orgId, maxAttendees } = useParams();
   const [source, setSource] = useState([
     { name: 'Mr. Somebody', org: '5 SLS', dutyTitle: 'FML' },
     { name: 'Mr. Somebodyelse', org: 'SPO', dutyTitle: 'Prop' },
     { name: 'Mr. anotherperson', org: 'SSC', dutyTitle: 'Eng' },
   ]);
+  const [roster, setRoster] = useState([])
 
   const [newAttendee, setNewAttendee] = useState({
     name: '',
@@ -27,6 +31,44 @@ export const OrgManager = () => {
     { name: 'Mr. anotherperson', org: 'Boeing', dutyTitle: 'SPO', phone: 'XXX-XXX-XXXX', email: '' },
     { name: 'Mr. Somebody', org: 'Boeing', dutyTitle: 'SPO', phone: 'XXX-XXX-XXXX', email: '' },
   ]);
+
+  useEffect(() => {
+    // Fetch organization data
+    const fetchOrganization = async () => {
+      try {
+        const response = await fetch(`http://localhost:3002/api/v1/orgs/${orgId}`);
+        const data = await response.json();
+        setOrganization(data);
+      } catch (error) {
+        console.error('Error fetching organization:', error);
+      }
+    };
+
+    // Fetch attendees data from directory
+    const fetchAttendees = async () => {
+      try {
+        const response = await fetch('http://localhost:3002/api/v1/directory');
+        const data = await response.json();
+
+        // Filter attendees by orgId and set the source
+        const filteredAttendees = data.filter(attendee => attendee.org_id === orgId)
+          .map(attendee => ({
+            name: attendee.name,
+            org: attendee.org,
+            dutyTitle: attendee.dutyTitle,
+            phone: attendee.phone || '',
+            email: attendee.email || ''
+          }));
+
+
+      } catch (error) {
+        console.error('Error fetching attendees:', error);
+      }
+    };
+
+    fetchOrganization();
+    fetchAttendees();
+  }, [orgId]);
 
   const onChange = (event) => {
     setSource(event.source);
@@ -94,49 +136,73 @@ export const OrgManager = () => {
     }));
   };
 
-  const addNewAttendee = () => {
+  const addNewAttendee = async () => {
     if (newAttendee.name && newAttendee.org && newAttendee.dutyTitle) {
-      setSource(prev => [...prev, newAttendee]);
-      setNewAttendee({
-        name: '',
-        org: '',
-        dutyTitle: '',
-        phone: '',
-        email: ''
-      });
+      try {
+        const response = await fetch('/api/v1/directory', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newAttendee),
+        });
+        const addedAttendee = await response.json();
+        setSource(prev => [...prev, addedAttendee]);
+        setNewAttendee({
+          name: '',
+          org: '',
+          dutyTitle: '',
+          phone: '',
+          email: ''
+        });
+      } catch (error) {
+        console.error('Error adding new attendee:', error);
+      }
     }
   }
 
-  const updateAttendee = (index, field, value) => {
-    const updatedTarget = [...target];
-    updatedTarget[index][field] = value;
-    setTarget(updatedTarget);
+  const updateAttendee = async (index, field, value) => {
+    const updatedAttendee = { ...target[index], [field]: value };
+    try {
+      const response = await fetch(`/api/v1/directory/${updatedAttendee.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedAttendee),
+      });
+      const updatedAttendeeFromServer = await response.json();
+      const updatedTarget = [...target];
+      updatedTarget[index] = updatedAttendeeFromServer;
+      setTarget(updatedTarget);
+    } catch (error) {
+      console.error('Error updating attendee:', error);
+    }
   };
 
   return (
     <div>
       <Link to='/'><Button>HOME</Button></Link>
-      <Card title="Org manager page - user">
+      <Card title={`Org manager page - ${organization ? organization.name : 'Loading...'}`}>
         <div className="grid">
           <div className="col-12 md:col-6">
-            <Card title="Launch management" className="h-full">
-              <h3>Attendee Selection</h3>
+            <Card title="Attendee Selection" className="h-full">
               <PickList
                 source={source}
                 target={target}
                 onChange={onChange}
                 itemTemplate={itemTemplate}
                 filter
-                filterBy="name"
+                filterBy="full_name,duty_title"
                 breakpoint="1280px"
                 sourceHeader="Available"
                 targetHeader="Selected"
                 sourceStyle={{ height: '24rem' }}
                 targetStyle={{ height: '24rem' }}
-                sourceFilterPlaceholder="Search by name"
-                targetFilterPlaceholder="Search by name"
+                sourceFilterPlaceholder="Search by name or duty title"
+                targetFilterPlaceholder="Search by name or duty title"
               />
-              <div className="text-orange-500 mt-4">Max Attendees: 2</div>
+              <div className="text-orange-500 mt-4">Max Attendees: {maxAttendees}</div>
             </Card>
           </div>
           <div className="col-12 md:col-6">

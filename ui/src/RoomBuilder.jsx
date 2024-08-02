@@ -6,7 +6,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
 
-const API_BASE_URL = 'http://localhost:3002/api/v1'; // Replace with your actual API base URL
+const API_BASE_URL = 'http://localhost:3002/api/v1'; // Make sure this matches your API base URL
 
 export const RoomBuilder = () => {
   const [roomName, setRoomName] = useState('');
@@ -21,7 +21,12 @@ export const RoomBuilder = () => {
 
   const addStation = () => {
     if (newStationId && newStationCapacity) {
-      setStations([...stations, { id: stations.length + 1, capacity: newStationCapacity, userNextId: newStationId }]);
+      const capacity = parseInt(newStationCapacity, 10);
+      if (isNaN(capacity) || capacity <= 0) {
+        showToast('warn', 'Warning', 'Station Capacity must be a positive number');
+        return;
+      }
+      setStations([...stations, { id: stations.length + 1, capacity, userNextId: newStationId }]);
       setNewStationId('');
       setNewStationCapacity('');
     } else {
@@ -49,6 +54,7 @@ export const RoomBuilder = () => {
     };
 
     try {
+      console.log('Sending request to create room:', roomData);
       const response = await fetch(`${API_BASE_URL}/rooms`, {
         method: 'POST',
         headers: {
@@ -57,11 +63,15 @@ export const RoomBuilder = () => {
         body: JSON.stringify(roomData),
       });
 
+      console.log('Response status:', response.status);
+      const responseText = await response.text();
+      console.log('Response body:', responseText);
+
       if (!response.ok) {
-        throw new Error('Failed to create room');
+        throw new Error(`Failed to create room: ${response.status} ${responseText}`);
       }
 
-      const result = await response.json();
+      const result = JSON.parse(responseText);
       console.log('Room created:', result);
       showToast('success', 'Success', 'Room created successfully');
 
@@ -70,14 +80,14 @@ export const RoomBuilder = () => {
       setStations([]);
     } catch (error) {
       console.error('Error creating room:', error);
-      showToast('error', 'Error', 'Failed to create room');
+      showToast('error', 'Error', `Failed to create room: ${error.message}`);
     }
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-900">
+    <div className="flex justify-center items-center min-h-screen bg-gray-900 p-4">
       <Toast ref={toast} />
-      <Card title="Room Builder" className="w-[600px] bg-gray-800 text-white">
+      <Card title="Room Builder" className="w-full max-w-2xl bg-gray-800 text-white">
         <div className="mb-4">
           <InputText
             value={roomName}
@@ -91,24 +101,25 @@ export const RoomBuilder = () => {
           <Column field="capacity" header="Station Capacity" />
           <Column field="userNextId" header="User Next Id" />
         </DataTable>
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
           <InputText
             value={newStationCapacity}
             onChange={(e) => setNewStationCapacity(e.target.value)}
             placeholder="Station Capacity"
-            className="w-[180px]"
+            className="w-full sm:w-[180px]"
+            type="number"
           />
           <InputText
             value={newStationId}
             onChange={(e) => setNewStationId(e.target.value)}
             placeholder="Station ID"
-            className="w-[180px]"
+            className="w-full sm:w-[180px]"
           />
           <Button
             label="Add Station"
             icon="pi pi-plus"
             onClick={addStation}
-            className="p-button-outlined"
+            className="p-button-outlined w-full sm:w-auto"
           />
         </div>
         <Button

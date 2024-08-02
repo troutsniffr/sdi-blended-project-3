@@ -19,7 +19,7 @@ export default function App() {
 
         <Route path="/roombuilder" element={<Layout><RoomBuilder /></Layout>} />
         <Route path="/LaunchBuilder" element={<Layout><LaunchBuilder /></Layout>} />
-
+        <Route path="/orgmanager/:id/:maxAttendees" element={<OrgManager />} />
         <Route path="/OrgManager" element={<OrgManager/>} />
       </Routes>
     </BrowserRouter>
